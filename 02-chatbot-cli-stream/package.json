@@ -1,0 +1,18 @@
+{
+  "name": "02-chatbot-cli-stream",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start:basic": "node --env-file .env ./basic/main.ts",
+    "start:advanced": "node --env-file .env ./advanced/main.ts",
+    "test": "echo \"Errxor: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^24.10.1"
+  }
+}
