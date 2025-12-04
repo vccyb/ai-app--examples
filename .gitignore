@@ -1,1 +1,74 @@
+# 环境变量文件
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Node.js相关
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# 构建输出
+dist/
+dist-ssr/
+build/
+*.local
+
+# 编辑器目录和文件
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# TypeScript
+*.tsbuildinfo
+
+# 测试覆盖率
+coverage/
+*.lcov
+
+# 日志文件
+logs
+*.log
+
+# 临时文件
+*.tmp
+*.temp
+.cache/
+
+# 操作系统文件
+Thumbs.db
+.DS_Store
+
+# 包管理器
+.npm
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# pnpm
+.pnpm-store/
+
+# 其他工具
+.eslintcache
+.stylelintcache
+
+# 特定于应用的文件
+/cypress/videos/
+/cypress/screenshots/
+/playwright-report/
+/test-results/
