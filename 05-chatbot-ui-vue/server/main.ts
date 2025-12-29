@@ -120,8 +120,7 @@ async function sseHandler(req: Request, res: Response) {
     req.on('end', () => {
         // 客户端关闭连接时，取消请求
         abortController.abort();
-        console.log('abort');
-    })
+        })
 
     let reply = ''
     for await (const chunk of stream) {

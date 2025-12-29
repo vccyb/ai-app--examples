@@ -1,183 +1,167 @@
 <template>
+  <main class="min-h-screen bg-white flex flex-col items-center px-4 py-8 sm:px-6">
+    <h1 class="text-2xl font-semibold text-gray-800 mb-6">
+      {{ isWelcome ? 'Welcome' : 'Chat' }}
+    </h1>
 
-  <main class="min-h-screen bg-background flex flex-col items-center gap-10 px-6 py-10">
-
-    <section class="flex flex-col items-center justify-center">
-      <h1 class=" text-3xl font-bold text-primary"> {{ isWelcome ? 'Welcome' : 'Chatbot UI' }}</h1>
-    </section>
-
-    <section class="flex flex-col gap-5 bg-background/60 backdrop-blur-sm rounded-2xl border border-neutral-200 shadow-sm lg:max-w-4xl w-full p-6 chat-scroll max-h-[70vh] overflow-y-auto">
-      <div class="flex items-center gap-3" :class="message.type === 'user' ? 'justify-end' : 'justify-start'"
-           v-for="message in messages" :key="message.type + message.payload.content">
+    <section ref="chatContainer" class="w-full max-w-2xl flex-1 flex flex-col gap-4 pb-24 sm:pb-32 overflow-y-auto max-h-[70vh]">
+      <div v-for="(message, idx) in messages" :key="idx + message.type + (message.payload?.content?.length || 0)" class="flex items-center gap-3"
+           :class="message.type === 'user' ? 'justify-end' : 'justify-start'">
         <template v-if="message.type === 'user'">
-          <p class="max-w-[80%] rounded-2xl bg-primary/10 text-primary px-4 py-2 leading-relaxed break-words">
+          <div class="max-w-[85%] rounded-xl px-3 py-2 text-sm leading-relaxed break-words bg-blue-500 text-white">
             {{ message.payload.content }}
-          </p>
-          <span class="w-10 h-10 rounded-full bg-primary/10 text-primary grid place-items-center ring-2 ring-primary/20 shadow-sm">
-            <iconify-icon icon="lucide:user" class="w-5 h-5"></iconify-icon>
+          </div>
+          <span class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+            <svg viewBox="0 0 24 24" class="w-4 h-4 block" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-8 0v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
           </span>
         </template>
         <template v-else>
-          <span class="w-10 h-10 rounded-full bg-neutral-200 text-neutral-700 grid place-items-center ring-2 ring-neutral-300 shadow-sm">
-            <iconify-icon icon="lucide:bot" class="w-5 h-5"></iconify-icon>
+          <span class="w-8 h-8 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center">
+            <svg viewBox="0 0 24 24" class="w-4 h-4 block" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="4" y="8" width="16" height="10" rx="3"/>
+              <circle cx="9" cy="13" r="1.5"/>
+              <circle cx="15" cy="13" r="1.5"/>
+              <path d="M12 8V5"/>
+              <circle cx="12" cy="4" r="1"/>
+            </svg>
           </span>
-          <p class="max-w-[80%] rounded-2xl bg-neutral-100 text-neutral-800 px-4 py-2 leading-relaxed break-words">
+          <div class="max-w-[85%] rounded-xl px-3 py-2 text-sm leading-relaxed break-words bg-gray-100 text-gray-800">
             {{ message.payload.content }}
-          </p>
+          </div>
         </template>
       </div>
     </section>
 
-
-    <section
-        :class="[
-      'bg-background md:max-w-3xl w-full p-4 mb-12 pt-0',
-      isWelcome
-        ? 'relative left-0 mx-auto -translate-x-0'
-        : 'fixed bottom-0 left-1/2 -translate-x-1/2'
-    ]"
-    >
-      <div
-          :class="[
-        'relative flex items-center gap-2 rounded-2xl border border-neutral-200 shadow-sm p-2',
-        'bg-background focus-within:border-primary'
-      ]"
-      >
+    <section class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-2xl px-4 pb-6">
+      <div class="relative flex items-center gap-2 rounded-xl bg-white shadow p-2">
         <input
-            ref="inputRef"
-            class="h-14 w-full rounded-xl bg-neutral-50 px-4 pr-20 outline-none placeholder:text-neutral-400 focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
-            autofocus
-            v-model="input"
-            :disabled="isConnecting || isReplying"
-            placeholder="尽管问..."
+          ref="inputRef"
+          v-model="input"
+          class="h-12 w-full rounded-lg bg-gray-50 px-4 pr-14 outline-none placeholder:text-gray-400"
+          placeholder="尽管问..."
+          @keyup.enter="handleSend"
         />
-        <div
-            :class="[
-          'absolute right-3 top-1/2 -translate-y-1/2 grid place-items-center w-12 h-12 cursor-pointer rounded-full transition-colors shadow bg-white hover:bg-neutral-50 ring-4 ring-neutral-200 border border-neutral-200'
-        ]"
-            @click="handleSend"
+        <button
+          class="absolute right-2 top-1/2 -translate-y-1/2 grid place-items-center w-10 h-10 rounded-full bg-white shadow hover:bg-gray-50"
+          @click="isReplying ? stop() : handleSend()"
+          :disabled="isConnecting && !isReplying"
         >
-          <iconify-icon v-if="isConnecting" icon="lucide:loader-2" class="w-6 h-6 text-neutral-700 animate-spin block leading-none"></iconify-icon>
-          <iconify-icon v-else-if="isReplying" icon="lucide:stop-circle" class="w-6 h-6 text-red-600 block leading-none"></iconify-icon>
-          <iconify-icon v-else icon="lucide:send" class="text-xl   w-6 h-6 text-primary block leading-none translate-y-[1px]"></iconify-icon>
-        </div>
+          <template v-if="isConnecting && !isReplying">
+            <svg viewBox="0 0 24 24" class="w-5 h-5 block text-gray-700 animate-spin" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" class="opacity-25"/>
+              <path d="M12 2a10 10 0 0 1 10 10" class="opacity-75"/>
+            </svg>
+          </template>
+          <template v-else-if="isReplying">
+            <svg viewBox="0 0 24 24" class="w-5 h-5 block text-red-600" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="6" y="6" width="12" height="12" rx="2"/>
+            </svg>
+          </template>
+          <template v-else>
+            <svg viewBox="0 0 24 24" class="w-5 h-5 block text-blue-600" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14"/>
+              <path d="M12 5l7 7-7 7"/>
+            </svg>
+          </template>
+        </button>
       </div>
     </section>
 
   </main>
-
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted, nextTick } from 'vue'
+import { ssePost } from './api/sse'
 
+type ChatMessage = {
+  type: 'user' | 'assistant'
+  payload: { content: string }
+  partial?: boolean
+}
 
-import type {ChatMessage} from "../types";
-import {computed, ref} from "vue";
+const messages = ref<ChatMessage[]>([])
+const input = ref('')
+const isConnecting = ref(false)
+const isReplying = ref(false)
+const es = ref<EventSource | null>(null)
+const controller = ref<AbortController | null>(null)
+const chatContainer = ref<HTMLElement | null>(null)
+const inputRef = ref<HTMLInputElement | null>(null)
 
+const isWelcome = computed(() => messages.value.length === 0)
 
-const messages = ref<Array<ChatMessage>>([
-  {
-    type: 'user',
-    payload: {
-      content: '你好',
-    },
-  },
-  {
-    type: 'assistant',
-    payload: {
-      content: '你好，我是 Chatbot UI',
-    },
-  },
-  {
-    type: 'user',
-    payload: {
-      content: '你好',
-    },
-  },
-  {
-    type: 'assistant',
-    payload: {
-      content: '你好，我是 Chatbot UI ，有什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗 ',
-    },
-  },
-  {
-    type: 'user',
-    payload: {
-      content: '你好',
-    },
-  },
-  {
-    type: 'assistant',
-    payload: {
-      content: '你好，我是 Chatbot UI ，有什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什有什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什有什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗 ',
-    },
-  },
-    {
-    type: 'user',
-    payload: {
-      content: '你好',
-    },
-  },
-  {
-    type: 'assistant',
-    payload: {
-      content: '你好，我是 Chatbot UI ，有什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什有什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什有什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗 ',
-    },
-  },  {
-    type: 'user',
-    payload: {
-      content: '你好',
-    },
-  },
-  {
-    type: 'assistant',
-    payload: {
-      content: '你好，我是 Chatbot UI ，有什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什有什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什有什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗 ',
-    },
-  },  {
-    type: 'user',
-    payload: {
-      content: '你好',
-    },
-  },
-  {
-    type: 'assistant',
-    payload: {
-      content: '你好，我是 Chatbot UI ，有什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什有什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什有什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗 ',
-    },
-  },  {
-    type: 'user',
-    payload: {
-      content: '你好',
-    },
-  },
-  {
-    type: 'assistant',
-    payload: {
-      content: '你好，我是 Chatbot UI ，有什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什有什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什有什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗什么我可以帮助你的吗 ',
-    },
-  },
+const API_BASE = '/'
 
-])
+async function fetchHistory() {
+  try {
+    const res = await fetch(`${API_BASE}history`)
+    if (!res.ok) throw new Error('failed')
+    const data = await res.json()
+    messages.value = data as ChatMessage[]
+    scrollToBottom()
+  } catch (e) {
+    // 可按需处理错误
+  }
+}
 
-const isWelcome = computed(() => {
-  return messages.value.length === 0
+async function handleSend() {
+  const text = input.value.trim()
+  if (!text || isConnecting.value || isReplying.value) return
+
+  const user: ChatMessage = { type: 'user', payload: { content: text } }
+  messages.value.push(user)
+
+  input.value = ''
+  isConnecting.value = true
+  isReplying.value = true
+
+  controller.value?.abort()
+  controller.value = new AbortController()
+
+  try {
+    const stream = await ssePost<ChatMessage>(`${API_BASE}sse`, {
+      params: { query: text },
+      signal: controller.value.signal,
+    })
+    for await (const msg of stream) {
+      const message = msg as ChatMessage
+      const last = messages.value[messages.value.length - 1]
+      if (message.partial && last?.partial) {
+        last.payload.content += message.payload.content
+      } else {
+        messages.value.push(message)
+      }
+      isConnecting.value = false
+      scrollToBottom()
+    }
+  } catch (e) {
+  } finally {
+    isConnecting.value = false
+    isReplying.value = false
+    controller.value = null
+  }
+}
+
+function stop() {
+  controller.value?.abort()
+  controller.value = null
+  isConnecting.value = false
+  isReplying.value = false
+}
+
+function scrollToBottom() {
+  nextTick(() => {
+    const el = chatContainer.value
+    if (el) el.scrollTop = el.scrollHeight
+  })
+}
+
+onMounted(() => {
+  fetchHistory()
+  nextTick(() => inputRef.value?.focus())
 })
-
-
 </script>
-
-<style scoped>
-.chat-scroll::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-.chat-scroll::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.12);
-  border-radius: 9999px;
-}
-.chat-scroll {
-  scrollbar-color: rgba(0, 0, 0, 0.12) transparent;
-  scrollbar-width: thin;
-}
-</style>

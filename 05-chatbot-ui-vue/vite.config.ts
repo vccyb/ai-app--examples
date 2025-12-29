@@ -8,4 +8,16 @@ export default defineConfig({
         vue(),
         tailwindcss()
     ],
+    server: {
+        proxy: {
+            '/history': {
+                target: 'http://localhost:3000',
+                changeOrigin: true,
+            },
+            '/sse': {
+                target: 'http://localhost:3000',
+                changeOrigin: true,
+            },
+        }
+    }
 })
