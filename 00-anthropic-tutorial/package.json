@@ -1,0 +1,19 @@
+{
+  "name": "00-anthropic-tutorial",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "module": "ESNext",
+  "scripts": {
+    "test:stream": "node --env-file .env Basic.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.2"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.6"
+  }
+}
