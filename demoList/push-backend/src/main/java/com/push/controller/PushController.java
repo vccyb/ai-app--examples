@@ -2,9 +2,13 @@ package com.push.controller;
 
 import com.push.dto.ApiResponse;
 import com.push.dto.*;
+import com.push.entity.PushPlatform;
+import com.push.mapper.PushPlatformRepository;
 import com.push.service.PushService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 推送控制器
@@ -16,6 +20,9 @@ public class PushController {
 
     @Autowired
     private PushService pushService;
+
+    @Autowired
+    private PushPlatformRepository pushPlatformRepository;
 
     /**
      * 预览推送内容
@@ -37,5 +44,13 @@ public class PushController {
         } else {
             return ApiResponse.error(result.getMessage());
         }
+    }
+
+    /**
+     * 获取所有推送平台
+     */
+    @GetMapping("/platforms")
+    public ApiResponse<List<PushPlatform>> getPlatforms() {
+        return ApiResponse.success(pushPlatformRepository.findAll());
     }
 }

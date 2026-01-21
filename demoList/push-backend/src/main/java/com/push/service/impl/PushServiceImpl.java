@@ -74,7 +74,6 @@ public class PushServiceImpl implements PushService {
             preview.setPlatformCode(platform.getPlatformCode());
             preview.setPlatformName(platform.getPlatformName());
             preview.setRequestParams(requestParams);
-            preview.setParamSources(buildParamSources(configJson, request.getDynamicParams()));
 
             response.getPushPlatforms().add(preview);
         }
@@ -153,20 +152,5 @@ public class PushServiceImpl implements PushService {
         } catch (Exception e) {
             return new HashMap<>();
         }
-    }
-
-    private Map<String, String> buildParamSources(Map<String, Object> configJson, Map<String, Object> dynamicParams) {
-        Map<String, String> sources = new HashMap<>();
-
-        if (configJson != null) {
-            configJson.keySet().forEach(k -> sources.put(k, "static"));
-        }
-        if (dynamicParams != null) {
-            dynamicParams.keySet().forEach(k -> sources.put(k, "dynamic"));
-        }
-        sources.put("receivers", "dynamic");
-        sources.put("userIds", "dynamic");
-
-        return sources;
     }
 }

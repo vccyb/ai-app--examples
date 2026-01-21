@@ -19,25 +19,11 @@ public class W3TodoPushStrategy implements PushPlatformStrategy {
     public Map<String, Object> buildPushRequest(Map<String, Object> config,
                                                  Map<String, Object> dynamicParams,
                                                  List<GroupMember> groupMembers) {
-        Map<String, Object> request = new HashMap<>();
+        // 1. 基于配置模板构建，用前端参数覆盖
+        Map<String, Object> request = TemplateUtils.buildFromTemplate(config, dynamicParams);
 
-        // 合并配置和动态参数
-        if (config != null) {
-            request.putAll(config);
-        }
-        if (dynamicParams != null) {
-            dynamicParams.forEach((k, v) -> {
-                if (v != null) {
-                    request.put(k, v);
-                }
-            });
-        }
-
-        // 添加接收人
-        List<String> receivers = new ArrayList<>();
-        for (GroupMember member : groupMembers) {
-            receivers.add(member.getEmployeeNo());
-        }
+        // 2. 添加接收人
+        List<String> receivers = TemplateUtils.extractEmployeeNos(groupMembers);
         request.put("receivers", receivers);
 
         return request;

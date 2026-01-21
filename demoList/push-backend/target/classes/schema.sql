@@ -86,11 +86,11 @@ INSERT INTO business_type (business_code, business_name) VALUES
 ('QA_REPORT', 'QA报告'),
 ('TEST_REPORT', '测试报告');
 
--- 初始化推送配置示例
+-- 初始化推送配置示例（完整模板格式）
 INSERT INTO push_config (business_type_id, platform_code, enabled, config_json) VALUES
-(1, 'W3_TODO', 1, '{"type": "QA", "source": "QA系统"}'),
-(2, 'W3_TODO', 1, '{"type": "Test", "source": "测试系统"}'),
-(2, 'WELINK_APP', 1, '{"category": "test_report"}');
+(1, 'W3_TODO', 1, '{"type": "QA", "source": "QA系统", "title": "QA报告通知", "content": "您有新的QA报告待处理", "jumpUrl": "", "extras": {}}'),
+(2, 'W3_TODO', 1, '{"type": "Test", "source": "测试系统", "title": "测试报告通知", "content": "测试报告已生成", "jumpUrl": "", "extras": {}}'),
+(2, 'WELINK_APP', 1, '{"category": "test_report", "title": "测试报告", "content": "测试完成", "url": "", "userIdList": []}');
 
 -- 初始化测试群组
 INSERT INTO push_group (group_name, description) VALUES

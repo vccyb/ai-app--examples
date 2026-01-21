@@ -56,6 +56,59 @@ public class PushConfigController {
      */
     @GetMapping("/business-types")
     public ApiResponse<List<BusinessType>> getBusinessTypes() {
-        return ApiResponse.success(businessTypeRepository.findAll());
+        return ApiResponse.success(pushConfigService.getAllBusinessTypes());
+    }
+
+    /**
+     * 根据ID获取业务类型
+     */
+    @GetMapping("/business-types/{id}")
+    public ApiResponse getBusinessTypeById(@PathVariable Long id) {
+        BusinessType businessType = pushConfigService.getBusinessTypeById(id);
+        if (businessType == null) {
+            return ApiResponse.error("业务类型不存在");
+        }
+        return ApiResponse.success(businessType);
+    }
+
+    /**
+     * 创建业务类型
+     */
+    @PostMapping("/business-types")
+    public ApiResponse<BusinessType> createBusinessType(@RequestBody BusinessType businessType) {
+        try {
+            BusinessType created = pushConfigService.createBusinessType(businessType);
+            return ApiResponse.success(created);
+        } catch (RuntimeException e) {
+            return ApiResponse.error( e.getMessage());
+        }
+    }
+
+    /**
+     * 更新业务类型
+     */
+    @PutMapping("/business-types/{id}")
+    public ApiResponse<BusinessType> updateBusinessType(
+            @PathVariable Long id,
+            @RequestBody BusinessType businessType) {
+        try {
+            BusinessType updated = pushConfigService.updateBusinessType(id, businessType);
+            return ApiResponse.success(updated);
+        } catch (RuntimeException e) {
+            return ApiResponse.error( e.getMessage());
+        }
+    }
+
+    /**
+     * 删除业务类型
+     */
+    @DeleteMapping("/business-types/{id}")
+    public ApiResponse<Void> deleteBusinessType(@PathVariable Long id) {
+        try {
+            pushConfigService.deleteBusinessType(id);
+            return ApiResponse.success(null);
+        } catch (RuntimeException e) {
+            return ApiResponse.error( e.getMessage());
+        }
     }
 }

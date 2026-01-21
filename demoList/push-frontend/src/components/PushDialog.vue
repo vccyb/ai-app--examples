@@ -11,6 +11,7 @@
         <div class="header-actions">
           <el-button link @click="showHistory">历史记录</el-button>
           <el-button link @click="showGroupConfig">群组配置</el-button>
+          <el-button link @click="showBusinessTypeConfig">业务类型配置</el-button>
         </div>
       </div>
     </template>
@@ -54,16 +55,7 @@
               <el-divider />
 
               <div v-for="(value, key) in platform.requestParams" :key="key" class="param-item">
-                <div class="param-label">
-                  {{ formatParamLabel(key) }}
-                  <el-tag
-                    :type="platform.paramSources[key] === 'static' ? 'success' : 'primary'"
-                    size="small"
-                    class="param-tag"
-                  >
-                    {{ platform.paramSources[key] === 'static' ? '配置' : '动态' }}
-                  </el-tag>
-                </div>
+                <div class="param-label">{{ formatParamLabel(key) }}</div>
                 <div class="param-value">{{ formatValue(value) }}</div>
               </div>
             </el-form>
@@ -85,6 +77,9 @@
 
     <!-- 群组配置弹窗 -->
     <GroupConfigDialog v-model:visible="groupConfigVisible" />
+
+    <!-- 业务类型配置弹窗 -->
+    <BusinessTypeConfigDialog v-model:visible="businessTypeConfigVisible" />
   </el-dialog>
 </template>
 
@@ -95,6 +90,7 @@ import pushApi from '../api/push'
 import groupApi from '../api/group'
 import PushHistoryDialog from './PushHistoryDialog.vue'
 import GroupConfigDialog from './GroupConfigDialog.vue'
+import BusinessTypeConfigDialog from './BusinessTypeConfigDialog.vue'
 
 const props = defineProps({
   visible: Boolean,
@@ -117,6 +113,7 @@ const groups = ref([])
 const selectedGroupId = ref(null)
 const historyVisible = ref(false)
 const groupConfigVisible = ref(false)
+const businessTypeConfigVisible = ref(false)
 
 const businessName = computed(() => {
   const map = {
@@ -227,6 +224,11 @@ const showHistory = () => {
 // 显示群组配置
 const showGroupConfig = () => {
   groupConfigVisible.value = true
+}
+
+// 显示业务类型配置
+const showBusinessTypeConfig = () => {
+  businessTypeConfigVisible.value = true
 }
 
 const handleClose = () => {

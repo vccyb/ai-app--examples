@@ -43,5 +43,47 @@ export default {
       url: '/api/push/config/business-types',
       method: 'get'
     })
+  },
+
+  /**
+   * 根据ID获取业务类型
+   */
+  getBusinessTypeById(id) {
+    return request({
+      url: `/api/push/config/business-types/${id}`,
+      method: 'get'
+    })
+  },
+
+  /**
+   * 创建业务类型
+   */
+  createBusinessType(data) {
+    return request({
+      url: '/api/push/config/business-types',
+      method: 'post',
+      data
+    })
+  },
+
+  /**
+   * 更新业务类型
+   */
+  updateBusinessType(id, data) {
+    return request({
+      url: `/api/push/config/business-types/${id}`,
+      method: 'put',
+      data
+    })
+  },
+
+  /**
+   * 删除业务类型
+   */
+  deleteBusinessType(id) {
+    return request({
+      url: `/api/push/config/business-types/${id}`,
+      method: 'delete'
+    })
   }
 }

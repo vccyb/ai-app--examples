@@ -24,5 +24,15 @@ export default {
       method: 'post',
       data
     })
+  },
+
+  /**
+   * 获取所有推送平台
+   */
+  getPlatforms() {
+    return request({
+      url: '/api/push/platforms',
+      method: 'get'
+    })
   }
 }

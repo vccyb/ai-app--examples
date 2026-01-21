@@ -17,6 +17,5 @@ public class PushPreviewResponse {
         private String platformCode;
         private String platformName;
         private Map<String, Object> requestParams;
-        private Map<String, String> paramSources; // 参数来源：static/dynamic
     }
 }
