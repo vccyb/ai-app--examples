@@ -86,11 +86,37 @@ INSERT INTO business_type (business_code, business_name) VALUES
 ('QA_REPORT', 'QA报告'),
 ('TEST_REPORT', '测试报告');
 
--- 初始化推送配置示例（完整模板格式）
+-- 初始化推送配置示例（根据外部接口文档配置静态参数）
+-- W3 待办配置
 INSERT INTO push_config (business_type_id, platform_code, enabled, config_json) VALUES
-(1, 'W3_TODO', 1, '{"type": "QA", "source": "QA系统", "title": "QA报告通知", "content": "您有新的QA报告待处理", "jumpUrl": "", "extras": {}}'),
-(2, 'W3_TODO', 1, '{"type": "Test", "source": "测试系统", "title": "测试报告通知", "content": "测试报告已生成", "jumpUrl": "", "extras": {}}'),
-(2, 'WELINK_APP', 1, '{"category": "test_report", "title": "测试报告", "content": "测试完成", "url": "", "userIdList": []}');
+(1, 'W3_TODO', 1, '{
+  "appName": "QA报告系统",
+  "appURL": "http://w3-beta.huawei.com",
+  "type": "J2EE",
+  "reserve1": "",
+  "reserve2": "qa_report",
+  "reserve10": "0"
+}'),
+(2, 'W3_TODO', 1, '{
+  "appName": "测试报告系统",
+  "appURL": "http://w3-beta.huawei.com",
+  "type": "J2EE",
+  "reserve1": "",
+  "reserve2": "test_report",
+  "reserve10": "0"
+}');
+
+-- WeLink 应用号配置
+INSERT INTO push_config (business_type_id, platform_code, enabled, config_json) VALUES
+(2, 'WELINK_APP', 1, '{
+  "app_id": "com.huawei.feed",
+  "theme_id": "d99b0ccaad7a4395b5f2aa558218dc9c",
+  "templateNo": "20251223000522",
+  "from_user_account": "z00512371",
+  "type": "1",
+  "displayType": "text",
+  "noticeType": 1
+}');
 
 -- 初始化测试群组
 INSERT INTO push_group (group_name, description) VALUES
