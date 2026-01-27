@@ -5,6 +5,7 @@ import com.push.dto.*;
 import com.push.entity.PushPlatform;
 import com.push.mapper.PushPlatformRepository;
 import com.push.service.PushService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,7 +29,7 @@ public class PushController {
      * 预览推送内容
      */
     @PostMapping("/preview")
-    public ApiResponse<PushPreviewResponse> preview(@RequestBody PushPreviewRequest request) {
+    public ApiResponse<PushPreviewResponse> preview(@Valid @RequestBody PushPreviewRequest request) {
         PushPreviewResponse response = pushService.preview(request);
         return ApiResponse.success(response);
     }
@@ -37,7 +38,7 @@ public class PushController {
      * 执行推送
      */
     @PostMapping("/execute")
-    public ApiResponse<PushResult> execute(@RequestBody PushExecuteRequest request) {
+    public ApiResponse<PushResult> execute(@Valid @RequestBody PushExecuteRequest request) {
         PushResult result = pushService.execute(request);
         if (result.isSuccess()) {
             return ApiResponse.success(result.getMessage(), result);

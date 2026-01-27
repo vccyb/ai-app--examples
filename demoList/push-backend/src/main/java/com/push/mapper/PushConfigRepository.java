@@ -12,5 +12,11 @@ import java.util.List;
 @Repository
 public interface PushConfigRepository extends JpaRepository<PushConfig, Long> {
     List<PushConfig> findByBusinessTypeId(Long businessTypeId);
+
+    /**
+     * 查询业务类型下所有已启用的推送配置
+     */
+    List<PushConfig> findByBusinessTypeIdAndEnabled(Long businessTypeId, Integer enabled);
+
     PushConfig findByBusinessTypeIdAndPlatformCode(Long businessTypeId, String platformCode);
 }

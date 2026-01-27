@@ -1,12 +1,15 @@
 package com.push.strategy;
 
-import com.push.dto.PushResult;
+import com.push.dto.PlatformPushResult;
+import com.push.dto.platform.BasePushRequest;
+import com.push.dto.platform.w3todo.W3TodoPushRequest;
 import com.push.entity.GroupMember;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -20,120 +23,119 @@ import java.util.stream.Collectors;
 @Component
 public class W3TodoPushStrategy implements PushPlatformStrategy {
 
+    private static final Logger log = LoggerFactory.getLogger(W3TodoPushStrategy.class);
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
-    public Map<String, Object> buildPushRequest(Map<String, Object> config,
-                                                 Map<String, Object> dynamicParams,
-                                                 List<GroupMember> groupMembers) {
-        Map<String, Object> request = new HashMap<>();
+    public BasePushRequest buildPushRequest(Map<String, Object> config,
+                                              Map<String, Object> dynamicParams,
+                                              List<GroupMember> groupMembers) {
+        W3TodoPushRequest request = new W3TodoPushRequest();
 
         // ========== 静态参数（从 config 获取） ==========
-        request.put("appName", config.get("appName"));
-        request.put("appURL", config.get("appURL"));
-        request.put("type", config.get("type"));  // 固定为 J2EE
-        request.put("reserve1", config.getOrDefault("reserve1", ""));
-        request.put("reserve2", config.get("reserve2"));  // 备用字段，区分任务类型
-        request.put("reserve10", config.getOrDefault("reserve10", "0"));  // 是否支持移动审批
+        request.setAppName((String) config.get("appName"));
+        request.setAppURL((String) config.get("appURL"));
+        request.setType((String) config.get("type"));
+        request.setReserve1((String) config.getOrDefault("reserve1", ""));
+        request.setReserve2((String) config.get("reserve2"));
+        request.setReserve10((String) config.getOrDefault("reserve10", "0"));
 
         // ========== 动态参数（从 dynamicParams 获取） ==========
-        // 任务描述（建议加上标题、流程和状态）
-        request.put("taskDesc", dynamicParams.getOrDefault("taskDesc", ""));
+        request.setTaskDesc((String) dynamicParams.getOrDefault("taskDesc", ""));
+        request.setTaskURL((String) dynamicParams.getOrDefault("taskURL", ""));
 
-        // 任务跳转 URL（绝对地址）
-        request.put("taskURL", dynamicParams.getOrDefault("taskURL", ""));
-
-        // 任务全局唯一标识符（建议拼接应用名英文简写）
+        // 任务UUID（建议拼接应用名英文简写）
         String taskUUID = (String) dynamicParams.get("taskUUID");
         if (taskUUID == null || taskUUID.isEmpty()) {
             String appName = (String) config.get("appName");
-            String appNameEn = extractAppNameEn(appName);
-            taskUUID = appNameEn + "_" + UUID.randomUUID().toString().replace("-", "");
+            taskUUID = appName + "_" + UUID.randomUUID().toString().substring(0, 8);
         }
-        request.put("taskUUID", taskUUID);
+        request.setTaskUUID(taskUUID);
 
-        // 业务系统发送待办的时间
-        String time = (String) dynamicParams.get("time");
-        if (time == null || time.isEmpty()) {
-            time = LocalDateTime.now().format(DATE_FORMATTER);
-        }
-        request.put("time", time);
-
-        // 申请人（可选，默认使用系统账号）
-        request.put("applicant", dynamicParams.getOrDefault("applicant", "system 00000000"));
-
-        // reserve3（可选，默认使用 taskURL）
-        request.put("reserve3", dynamicParams.getOrDefault("reserve3", request.get("taskURL")));
+        request.setTaskTitle((String) dynamicParams.getOrDefault("taskTitle", ""));
+        request.setTaskCreateTime(dynamicParams.containsKey("taskCreateTime")
+                ? (String) dynamicParams.get("taskCreateTime")
+                : LocalDateTime.now().format(DATE_FORMATTER));
+        request.setTaskState((String) dynamicParams.getOrDefault("taskState", "1"));
+        request.setTaskCreateUser((String) dynamicParams.getOrDefault("taskCreateUser", ""));
+        request.setTaskCreateUserName((String) dynamicParams.getOrDefault("taskCreateUserName", ""));
 
         // ========== 接收人（从 groupMembers 获取） ==========
-        // handler 格式：zhangsan 00124563,lishi WX123456（工号前面加前缀，用逗号分隔）
-        String handler = groupMembers.stream()
-                .map(member -> formatEmployeeNo(member.getEmployeeNo()))
-                .collect(Collectors.joining(","));
-        request.put("handler", handler);
+        request.setReceiverUserAccounts(groupMembers.stream()
+                .map(GroupMember::getEmployeeNo)
+                .collect(Collectors.toList()));
+
+        // 抄送人（可选）
+        // request.setCopyUserAccounts(...);
 
         return request;
     }
 
     @Override
-    public PushResult execute(Map<String, Object> request) {
-        // 模拟推送成功（实际项目中调用真实API）
-        System.out.println("=== W3代办推送（模拟） ====");
-        System.out.println("接口路径: http(s)://w3-beta.huawei.com/task/rest/todotaskmanagement/v2/createtask4w3");
-        System.out.println("请求参数: " + request);
+    public PlatformPushResult execute(Map<String, Object> request) {
+        log.info("=== W3代办推送（模拟） ====");
+        log.info("接口路径: http(s)://w3-beta.huawei.com/task/rest/todotaskmanagement/v2/createtask4w3");
+        log.info("请求参数: {}", request);
+
         try {
             // 模拟网络延迟
             Thread.sleep(200);
 
+            // 模拟成功响应
             // 实际项目中应该使用 Feign 调用真实 API
-            // w3TodoFeignClient.createTask(request);
+            // ResponseEntity<W3TodoResponse> response = w3TodoFeignClient.createTask(request);
 
-            return PushResult.success("W3代办推送成功");
+            // ========== 模拟W3 API响应 ==========
+            String mockTaskId = "W3_TASK_" + UUID.randomUUID().toString().substring(0, 8);
+            String mockResponseBody = String.format(
+                    "{\"code\":\"0\",\"message\":\"成功\",\"data\":{\"taskId\":\"%s\",\"taskStatus\":\"created\"}}",
+                    mockTaskId);
+
+            log.info("W3 API响应: {}", mockResponseBody);
+
+            // 构建详细的推送结果
+            PlatformPushResult result = PlatformPushResult.success(
+                    "W3代办推送成功",
+                    mockTaskId,  // W3返回的taskId作为traceId
+                    mockResponseBody
+            );
+            result.setHttpStatusCode(200);
+            result.setBusinessCode("0");
+            result.setBusinessMessage("成功");
+
+            return result;
+
         } catch (Exception e) {
-            return PushResult.failure("W3代办推送失败: " + e.getMessage());
+            log.error("W3代办推送失败", e);
+
+            // 构建失败结果
+            PlatformPushResult result = PlatformPushResult.failure(
+                    "W3代办推送失败: " + e.getMessage(),
+                    null,
+                    getStackTrace(e)
+            );
+            result.setHttpStatusCode(500);
+            result.setExceptionStack(getStackTrace(e));
+
+            return result;
         }
+    }
+
+    /**
+     * 获取异常堆栈信息
+     */
+    private String getStackTrace(Exception e) {
+        if (e == null) {
+            return null;
+        }
+        java.io.StringWriter sw = new java.io.StringWriter();
+        java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+        e.printStackTrace(pw);
+        return sw.toString();
     }
 
     @Override
     public String getPlatformCode() {
         return "W3_TODO";
-    }
-
-    /**
-     * 格式化工号
-     * W3 要求格式：zhangsan 00124563 或 lishi WX123456
-     * 如果工号已经是正确格式，直接使用；否则添加 z 前缀
-     */
-    private String formatEmployeeNo(String employeeNo) {
-        if (employeeNo == null || employeeNo.isEmpty()) {
-            return "z 00000000";
-        }
-
-        // 如果已经包含空格（已经是正确格式），直接返回
-        if (employeeNo.contains(" ")) {
-            return employeeNo;
-        }
-
-        // 如果以 z 或 Z 开头，直接在后面加空格
-        if (employeeNo.toLowerCase().startsWith("z")) {
-            return employeeNo.substring(0, 1) + " " + employeeNo.substring(1);
-        }
-
-        // 其他情况，添加 z 前缀和空格
-        return "z " + employeeNo;
-    }
-
-    /**
-     * 从应用名称提取英文简写
-     * 例如："QA报告系统" -> "qa"
-     */
-    private String extractAppNameEn(String appName) {
-        if (appName == null || appName.isEmpty()) {
-            return "app";
-        }
-
-        // 提取英文字母和数字
-        String en = appName.replaceAll("[^a-zA-Z0-9]", "");
-        return en.isEmpty() ? "app" : en.toLowerCase();
     }
 }
