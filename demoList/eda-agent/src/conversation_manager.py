@@ -117,9 +117,14 @@ class ConversationManager:
             }
         elif hasattr(message, 'content'):
             # 处理响应对象（Claude API 响应）
+            # message.content 可能是列表，直接使用
+            content = message.content
+            if isinstance(content, str):
+                content = [content]
+
             assistant_message = {
                 "role": "assistant",
-                "content": self._extract_text_from_message(message)
+                "content": content
             }
         else:
             # 假设是字典
@@ -128,15 +133,38 @@ class ConversationManager:
         self.messages.append(assistant_message)
 
     def add_tool_results(self, tool_results: List[Dict]):
-        """添加工具执行结果
-
-        Args:
-            tool_results: 工具执行结果列表
-        """
+        """添加工具执行结果"""
         for result in tool_results:
+            # 检查是否是错误
+            is_error = result.get("is_error", False)
+
+            if is_error:
+                # 错误结果
+                content = result.get("content", "")
+                tool_result_msg = {
+                    "type": "tool_result",
+                    "tool_use_id": result.get("tool_use_id", ""),
+                    "content": f"工具执行失败：{content}",
+                    "is_error": True
+                }
+            else:
+                # 成功结果 - content 需要是字符串
+                content = result.get("content", {})
+                if isinstance(content, dict):
+                    # 如果是字典，转为 JSON 字符串
+                    import json
+                    content = json.dumps(content, ensure_ascii=False)
+
+                tool_result_msg = {
+                    "type": "tool_result",
+                    "tool_use_id": result.get("tool_use_id", ""),
+                    "content": str(content),
+                    "is_error": False
+                }
+
             self.messages.append({
                 "role": "user",
-                "content": result  # 工具结果作为用户消息发送回 LLM
+                "content": [tool_result_msg]  # Anthropic API 期望列表格式
             })
 
     def _extract_text_from_message(self, message: Any) -> str:
