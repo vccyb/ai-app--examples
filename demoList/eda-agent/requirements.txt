@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+pydantic
+
+# 新一代 LLM 驱动系统依赖（可选）
+# anthropic  # Claude API 客户端，如需使用 Claude 请取消注释
+# dashscope  # 阿里云 Qwen API 客户端，如需使用 Qwen 请取消注释

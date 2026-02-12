@@ -1,0 +1,285 @@
+/* 赛博修仙主题样式 */
+
+/* CSS 变量定义 */
+:root {
+  /* 主色调 */
+  --color-bg-dark: #0a0a0a;
+  --color-bg-purple: #1a0a2e;
+
+  /* 霓虹强调色 */
+  --color-neon-pink: #ff006e;
+  --color-neon-cyan: #00f5ff;
+  --color-neon-gold: #ffd700;
+
+  /* 文字色 */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #e0e0e0;
+
+  /* 玻璃态效果 */
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+
+  /* 霓虹发光效果 */
+  --glow-pink: 0 0 10px #ff006e, 0 0 20px #ff006e;
+  --glow-cyan: 0 0 10px #00f5ff, 0 0 20px #00f5ff;
+  --glow-gold: 0 0 10px #ffd700, 0 0 20px #ffd700;
+}
+
+/* 全局样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Courier New', monospace;
+  background: var(--color-bg-dark);
+  color: var(--color-text-primary);
+  overflow-x: hidden;
+}
+
+/* 霓虹文字效果 */
+.neon-text-pink {
+  color: var(--color-neon-pink);
+  text-shadow: var(--glow-pink);
+}
+
+.neon-text-cyan {
+  color: var(--color-neon-cyan);
+  text-shadow: var(--glow-cyan);
+}
+
+.neon-text-gold {
+  color: var(--color-neon-gold);
+  text-shadow: var(--glow-gold);
+}
+
+/* 玻璃态卡片 */
+.glass-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(10px);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+/* 霓虹边框 */
+.neon-border-pink {
+  border: 2px solid var(--color-neon-pink);
+  box-shadow: var(--glow-pink);
+}
+
+.neon-border-cyan {
+  border: 2px solid var(--color-neon-cyan);
+  box-shadow: var(--glow-cyan);
+}
+
+.neon-border-gold {
+  border: 2px solid var(--color-neon-gold);
+  box-shadow: var(--glow-gold);
+}
+
+/* 数据流动画背景 */
+.data-flow-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(180deg, var(--color-bg-dark) 0%, var(--color-bg-purple) 100%);
+}
+
+/* 扫描线效果 */
+.scan-line {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-neon-cyan), transparent);
+  animation: scan 3s linear infinite;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+@keyframes scan {
+  0% {
+    top: 0;
+  }
+  100% {
+    top: 100%;
+  }
+}
+
+/* 呼吸灯效果 */
+.breathing {
+  animation: breathing 2s ease-in-out infinite;
+}
+
+@keyframes breathing {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* 数字滚动效果 */
+.number-roll {
+  font-family: 'Courier New', monospace;
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--color-neon-pink);
+  text-shadow: var(--glow-pink);
+}
+
+/* 进度条样式 */
+.progress-bar {
+  width: 100%;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-neon-cyan), var(--color-neon-pink));
+  transition: width 0.5s ease;
+  position: relative;
+}
+
+.progress-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* 网格地面效果 */
+.grid-floor {
+  background-image:
+    linear-gradient(rgba(0, 245, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 245, 255, 0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+  background-position: center center;
+}
+
+/* 全息投影效果 */
+.holographic {
+  position: relative;
+}
+
+.holographic::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, var(--color-neon-cyan), var(--color-neon-pink), var(--color-neon-gold));
+  border-radius: inherit;
+  z-index: -1;
+  opacity: 0.5;
+  filter: blur(5px);
+}
+
+/* 数据流粒子 */
+.data-particle {
+  position: absolute;
+  width: 2px;
+  height: 20px;
+  background: linear-gradient(180deg, transparent, var(--color-neon-cyan), transparent);
+  animation: fall 3s linear infinite;
+}
+
+@keyframes fall {
+  0% {
+    transform: translateY(-100vh);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+}
+
+/* Tab 切换效果 */
+.tab-active {
+  color: var(--color-neon-cyan);
+  border-bottom: 2px solid var(--color-neon-cyan);
+  text-shadow: var(--glow-cyan);
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-neon-cyan);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neon-pink);
+}
+
+/* 加载动画 */
+.loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-neon-cyan);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 警告闪烁效果 */
+.warning-flash {
+  animation: warning-flash 1s ease-in-out infinite;
+}
+
+@keyframes warning-flash {
+  0%, 100% {
+    background-color: rgba(255, 0, 110, 0.1);
+  }
+  50% {
+    background-color: rgba(255, 0, 110, 0.3);
+  }
+}

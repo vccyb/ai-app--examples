@@ -1,0 +1,6 @@
+/* 导入赛博修仙主题样式 */
+@import './styles/cyber-cultivation.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

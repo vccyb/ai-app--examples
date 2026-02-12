@@ -15,7 +15,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 
 /**
@@ -43,8 +51,22 @@ public class PushServiceImpl implements PushService {
 
     @Autowired
     private List<PushPlatformStrategy> strategies;
+    
+    /**
+     * Cache for strategy lookup to improve performance
+     */
+    private Map<String, PushPlatformStrategy> strategyCache;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    
+    // Initialize cache after bean creation
+    @PostConstruct
+    public void initStrategyCache() {
+        this.strategyCache = new ConcurrentHashMap<>();
+        for (PushPlatformStrategy strategy : strategies) {
+            this.strategyCache.put(strategy.getPlatformCode(), strategy);
+        }
+    }
 
     @Override
     public PushPreviewResponse preview(PushPreviewRequest request) {
@@ -65,10 +87,10 @@ public class PushServiceImpl implements PushService {
         }
 
         // 3. 批量查询所有已启用的推送平台（避免N+1查询）
-        List<String> platformCodes = configs.stream()
+        List<String> platformCodes = new ArrayList<>(configs.stream()
                 .map(PushConfig::getPlatformCode)
                 .distinct()
-                .toList();
+                .collect(Collectors.toSet()));
         List<PushPlatform> platforms = pushPlatformRepository.findByEnabled(PushConstants.ENABLED);
         Map<String, PushPlatform> platformMap = platforms.stream()
                 .filter(p -> platformCodes.contains(p.getPlatformCode()))
@@ -102,7 +124,7 @@ public class PushServiceImpl implements PushService {
                 continue;
             }
 
-            // 获取推送策略
+            // Get strategy from cached map for better performance
             PushPlatformStrategy strategy = getStrategy(platformCode);
             if (strategy == null) {
                 log.warn("推送平台【{}】未实现对应的策略", platformCode);
@@ -176,10 +198,10 @@ public class PushServiceImpl implements PushService {
         }
 
         // 5. 批量查询所有已启用的推送平台（避免N+1查询）
-        List<String> platformCodes = configs.stream()
+        List<String> platformCodes = new ArrayList<>(configs.stream()
                 .map(PushConfig::getPlatformCode)
                 .distinct()
-                .toList();
+                .collect(Collectors.toSet()));
         List<PushPlatform> platforms = pushPlatformRepository.findByEnabled(PushConstants.ENABLED);
         Map<String, PushPlatform> platformMap = platforms.stream()
                 .filter(p -> platformCodes.contains(p.getPlatformCode()))
@@ -187,136 +209,263 @@ public class PushServiceImpl implements PushService {
 
         log.info("群组成员数：{}，推送平台数：{}", members.size(), configs.size());
 
-        // 6. 执行推送统计
-        int successCount = 0;
-        int failureCount = 0;
-        List<String> failurePlatforms = new ArrayList<>();
+        // 6. Execute pushes concurrently for better performance
+        ExecutorService executorService = Executors.newFixedThreadPool(Math.min(configs.size(), 10)); // Limit concurrent threads
+        final int[] successCount = {0};
+        final int[] failureCount = {0};
+        final List<String> failurePlatforms = Collections.synchronizedList(new ArrayList<>());
+        
+        // Create a latch to wait for all tasks to complete
+        java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(configs.size());
 
-        // 7. 遍历每个推送配置，执行推送
-        for (PushConfig config : configs) {
-            String platformCode = config.getPlatformCode();
-            PushPlatform platform = platformMap.get(platformCode);
+        // 7. Process each config concurrently
+        for (final PushConfig config : configs) {
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        String platformCode = config.getPlatformCode();
+                        PushPlatform platform = platformMap.get(platformCode);
 
-            if (platform == null) {
-                log.warn("推送平台【{}】未启用或不存在，跳过", platformCode);
-                failureCount++;
-                failurePlatforms.add(platformCode + "(平台未启用)");
-                continue;
-            }
+                        if (platform == null) {
+                            log.warn("推送平台【{}】未启用或不存在，跳过", platformCode);
+                            synchronized (failureCount) {
+                                failureCount[0]++;
+                            }
+                            failurePlatforms.add(platformCode + "(平台未启用)");
+                            return;
+                        }
 
-            // 获取推送策略
-            PushPlatformStrategy strategy = getStrategy(platformCode);
-            if (strategy == null) {
-                log.warn("推送平台【{}】未实现对应的策略，跳过", platformCode);
-                failureCount++;
-                failurePlatforms.add(platformCode + "(策略未实现)");
-                continue;
-            }
+                        // Get strategy from cached map for better performance
+                        PushPlatformStrategy strategy = getStrategy(platformCode);
+                        if (strategy == null) {
+                            log.warn("推送平台【{}】未实现对应的策略，跳过", platformCode);
+                            synchronized (failureCount) {
+                                failureCount[0]++;
+                            }
+                            failurePlatforms.add(platformCode + "(策略未实现)");
+                            return;
+                        }
 
+                        try {
+                            // Parse config JSON
+                            Map<String, Object> configJson = parseConfigJson(config.getConfigJson());
+
+                            // Build push request parameters (strongly typed DTO)
+                            BasePushRequest baseRequest = strategy.buildPushRequest(
+                                    configJson, request.getDynamicParams(), members);
+
+                            // Convert to Map for API call
+                            Map<String, Object> requestParams = baseRequest.toMap();
+
+                            log.info("开始推送，平台：{}，接收人数：{}", platform.getPlatformName(), members.size());
+
+                            // Execute push with retry mechanism
+                            PlatformPushResult platformResult = executeWithRetry(strategy, requestParams, 3);
+
+                            // Convert to Service layer PushResult
+                            PushResult result = platformResult.isSuccess()
+                                ? PushResult.success(platformResult.getMessage(), platformResult)
+                                : PushResult.failure(platformResult.getMessage(), platformResult);
+
+                            // Record push history (store complete platform response)
+                            PushHistory history = new PushHistory();
+                            history.setBusinessTypeId(businessType.getId());
+                            history.setPlatformCode(platformCode);
+                            history.setGroupId(request.getGroupId());
+                            history.setBusinessKey(request.getBusinessKey());
+                            history.setRequestJson(serializeRequestParams(requestParams));
+                            history.setResponseJson(serializePlatformResult(platformResult));
+                            history.setStatus(platformResult.isSuccess() ? PushConstants.PUSH_STATUS_SUCCESS : PushConstants.PUSH_STATUS_FAILURE);
+                            history.setErrorMessage(platformResult.isSuccess() ? null : platformResult.getMessage());
+
+                            pushHistoryRepository.save(history);
+
+                            // Update statistics
+                            if (platformResult.isSuccess()) {
+                                synchronized (successCount) {
+                                    successCount[0]++;
+                                }
+                                log.info("推送成功，平台：{}，traceId：{}",
+                                    platform.getPlatformName(), platformResult.getTraceId());
+                            } else {
+                                synchronized (failureCount) {
+                                    failureCount[0]++;
+                                }
+                                failurePlatforms.add(platformCode + "(" + platformResult.getMessage() + ")");
+                                log.error("推送失败，平台：{}，错误：{}",
+                                    platform.getPlatformName(), platformResult.getMessage());
+                            }
+
+                        } catch (Exception e) {
+                            // Record exception push history
+                            recordExceptionHistory(strategy, config, request, businessType, members, e);
+                            
+                            synchronized (failureCount) {
+                                failureCount[0]++;
+                            }
+                            failurePlatforms.add(platformCode + "(执行异常)");
+                            log.error("推送执行异常，平台：{}", platform.getPlatformName(), e);
+                        }
+                    } finally {
+                        latch.countDown(); // Signal that this task is complete
+                    }
+                }
+            });
+        }
+
+        // Wait for all pushes to complete
+        try {
+            latch.await(); // Wait for all tasks to complete
+        } catch (InterruptedException e) {
+            log.error("等待推送完成时被中断", e);
+            Thread.currentThread().interrupt(); // Preserve interrupt status
+        } finally {
+            executorService.shutdown(); // Shutdown the executor service
             try {
-                // 解析配置JSON
-                Map<String, Object> configJson = parseConfigJson(config.getConfigJson());
-
-                // 构建推送请求参数（强类型DTO）
-                BasePushRequest baseRequest = strategy.buildPushRequest(
-                        configJson, request.getDynamicParams(), members);
-
-                // 转换为Map用于API调用
-                Map<String, Object> requestParams = baseRequest.toMap();
-
-                log.info("开始推送，平台：{}，接收人数：{}", platform.getPlatformName(), members.size());
-
-                // 执行推送
-                PlatformPushResult platformResult = strategy.execute(requestParams);
-
-                // 转换为Service层使用的PushResult
-                PushResult result = platformResult.isSuccess()
-                    ? PushResult.success(platformResult.getMessage(), platformResult)
-                    : PushResult.failure(platformResult.getMessage(), platformResult);
-
-                // 记录推送历史（存储完整的平台响应）
-                PushHistory history = new PushHistory();
-                history.setBusinessTypeId(businessType.getId());
-                history.setPlatformCode(platformCode);
-                history.setGroupId(request.getGroupId());
-                history.setBusinessKey(request.getBusinessKey());
-                history.setRequestJson(serializeRequestParams(requestParams));
-                history.setResponseJson(serializePlatformResult(platformResult));
-                history.setStatus(platformResult.isSuccess() ? PushConstants.PUSH_STATUS_SUCCESS : PushConstants.PUSH_STATUS_FAILURE);
-                history.setErrorMessage(platformResult.isSuccess() ? null : platformResult.getMessage());
-
-                pushHistoryRepository.save(history);
-
-                // 统计结果
-                if (platformResult.isSuccess()) {
-                    successCount++;
-                    log.info("推送成功，平台：{}，traceId：{}",
-                        platform.getPlatformName(), platformResult.getTraceId());
-                } else {
-                    failureCount++;
-                    failurePlatforms.add(platformCode + "(" + platformResult.getMessage() + ")");
-                    log.error("推送失败，平台：{}，错误：{}",
-                        platform.getPlatformName(), platformResult.getMessage());
+                if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
+                    executorService.shutdownNow(); // Force shutdown if not terminated gracefully
                 }
-
-            } catch (Exception e) {
-                // 记录异常推送历史
-                try {
-                    BasePushRequest baseRequest = strategy.buildPushRequest(
-                            parseConfigJson(config.getConfigJson()),
-                            request.getDynamicParams(),
-                            members);
-                    Map<String, Object> requestParams = baseRequest.toMap();
-
-                    PlatformPushResult errorResult = new PlatformPushResult();
-                    errorResult.setSuccess(false);
-                    errorResult.setMessage("执行异常: " + e.getMessage());
-                    errorResult.setExceptionStack(getStackTrace(e));
-
-                    PushHistory history = new PushHistory();
-                    history.setBusinessTypeId(businessType.getId());
-                    history.setPlatformCode(platformCode);
-                    history.setGroupId(request.getGroupId());
-                    history.setBusinessKey(request.getBusinessKey());
-                    history.setRequestJson(serializeRequestParams(requestParams));
-                    history.setResponseJson(serializePlatformResult(errorResult));
-                    history.setStatus(PushConstants.PUSH_STATUS_FAILURE);
-                    history.setErrorMessage("执行异常: " + e.getMessage());
-                    pushHistoryRepository.save(history);
-                } catch (Exception saveException) {
-                    log.error("保存推送历史失败", saveException);
-                }
-
-                failureCount++;
-                failurePlatforms.add(platformCode + "(执行异常)");
-                log.error("推送执行异常，平台：{}", platform.getPlatformName(), e);
+            } catch (InterruptedException ie) {
+                executorService.shutdownNow();
+                Thread.currentThread().interrupt();
             }
         }
 
-        // 8. 构建返回结果
-        if (successCount == 0 && failureCount > 0) {
+        // 8. Build return result
+        if (successCount[0] == 0 && failureCount[0] > 0) {
             String message = String.format("推送全部失败，失败平台：%s", String.join("、", failurePlatforms));
             log.error("推送执行结果：{}", message);
             return PushResult.failure(message);
-        } else if (successCount > 0 && failureCount > 0) {
+        } else if (successCount[0] > 0 && failureCount[0] > 0) {
             String message = String.format("推送部分成功（成功：%d，失败：%d），失败平台：%s",
-                    successCount, failureCount, String.join("、", failurePlatforms));
+                    successCount[0], failureCount[0], String.join("、", failurePlatforms));
             log.warn("推送执行结果：{}", message);
             return PushResult.success(message);
         } else {
-            String message = String.format("推送全部成功，成功：%d", successCount);
+            String message = String.format("推送全部成功，成功：%d", successCount[0]);
             log.info("推送执行结果：{}", message);
             return PushResult.success(message);
         }
     }
 
+    /**
+     * Get strategy from cached map for better performance
+     */
     private PushPlatformStrategy getStrategy(String platformCode) {
-        return strategies.stream()
-                .filter(s -> s.getPlatformCode().equals(platformCode))
-                .findFirst()
-                .orElse(null);
+        if (strategyCache == null) {
+            // Fallback to stream approach if cache not initialized
+            return strategies.stream()
+                    .filter(s -> s.getPlatformCode().equals(platformCode))
+                    .findFirst()
+                    .orElse(null);
+        }
+        return strategyCache.get(platformCode);
     }
+    
+    /**
+     * Execute push with retry mechanism
+     */
+    private PlatformPushResult executeWithRetry(PushPlatformStrategy strategy, Map<String, Object> requestParams, int maxRetries) {
+        Exception lastException = null;
+        PlatformPushResult lastResult = null;
+        
+        for (int i = 0; i < maxRetries; i++) {
+            try {
+                PlatformPushResult result = strategy.execute(requestParams);
+                
+                // If successful or it's the last attempt, return the result
+                if (result.isSuccess() || i == maxRetries - 1) {
+                    return result;
+                }
+                
+                log.warn("推送尝试 {} 失败，准备重试... 错误: {}", i + 1, result.getMessage());
+                
+                // Wait before retry with exponential backoff
+                try {
+                    Thread.sleep((long) Math.pow(2, i) * 1000); // 1s, 2s, 4s...
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    return result;
+                }
+                
+                lastResult = result;
+            } catch (Exception e) {
+                lastException = e;
+                
+                if (i == maxRetries - 1) {
+                    // Last attempt, create error result
+                    PlatformPushResult errorResult = new PlatformPushResult();
+                    errorResult.setSuccess(false);
+                    errorResult.setMessage("执行异常: " + e.getMessage());
+                    errorResult.setExceptionStack(getStackTrace(e));
+                    return errorResult;
+                }
+                
+                log.warn("推送尝试 {} 异常，准备重试...", i + 1, e);
+                
+                // Wait before retry with exponential backoff
+                try {
+                    Thread.sleep((long) Math.pow(2, i) * 1000); // 1s, 2s, 4s...
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    PlatformPushResult errorResult = new PlatformPushResult();
+                    errorResult.setSuccess(false);
+                    errorResult.setMessage("执行异常: " + e.getMessage());
+                    errorResult.setExceptionStack(getStackTrace(e));
+                    return errorResult;
+                }
+            }
+        }
+        
+        // This should not be reached, but return the last result/error as fallback
+        if (lastResult != null) {
+            return lastResult;
+        } else if (lastException != null) {
+            PlatformPushResult errorResult = new PlatformPushResult();
+            errorResult.setSuccess(false);
+            errorResult.setMessage("执行异常: " + lastException.getMessage());
+            errorResult.setExceptionStack(getStackTrace(lastException));
+            return errorResult;
+        } else {
+            return PlatformPushResult.failure("未知错误");
+        }
+    }
+    
+    /**
+     * Record exception push history
+     */
+    private void recordExceptionHistory(PushPlatformStrategy strategy, PushConfig config, 
+                                       PushExecuteRequest request, BusinessType businessType, 
+                                       List<GroupMember> members, Exception e) {
+        try {
+            Map<String, Object> configJson = parseConfigJson(config.getConfigJson());
+            BasePushRequest baseRequest = strategy.buildPushRequest(
+                    configJson,
+                    request.getDynamicParams(),
+                    members);
+            Map<String, Object> requestParams = baseRequest.toMap();
 
+            PlatformPushResult errorResult = new PlatformPushResult();
+            errorResult.setSuccess(false);
+            errorResult.setMessage("执行异常: " + e.getMessage());
+            errorResult.setExceptionStack(getStackTrace(e));
+
+            PushHistory history = new PushHistory();
+            history.setBusinessTypeId(businessType.getId());
+            history.setPlatformCode(config.getPlatformCode());
+            history.setGroupId(request.getGroupId());
+            history.setBusinessKey(request.getBusinessKey());
+            history.setRequestJson(serializeRequestParams(requestParams));
+            history.setResponseJson(serializePlatformResult(errorResult));
+            history.setStatus(PushConstants.PUSH_STATUS_FAILURE);
+            history.setErrorMessage("执行异常: " + e.getMessage());
+            pushHistoryRepository.save(history);
+        } catch (Exception saveException) {
+            log.error("保存推送历史失败", saveException);
+        }
+    }
+    
     /**
      * 解析配置JSON
      */
