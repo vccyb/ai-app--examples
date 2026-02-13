@@ -1,0 +1,213 @@
+{
+  "tasks": [
+    {
+      "id": "task_20260213_234604_0",
+      "created_at": "2026-02-13T23:46:04.742898",
+      "task_id": "模块A_timing_verify",
+      "input": "验证模块Atiming",
+      "module": "模块A",
+      "scene": "verify",
+      "status": "FAIL"
+    },
+    {
+      "id": "task_20260213_234736_1",
+      "created_at": "2026-02-13T23:47:36.744217",
+      "task_id": "模块A_timing_verify",
+      "input": "验证模块Atiming",
+      "module": "模块A",
+      "scene": "verify",
+      "status": "FAIL"
+    },
+    {
+      "id": "task_20260213_235050_2",
+      "created_at": "2026-02-13T23:50:50.715950",
+      "task_id": "模块A_timing_verify",
+      "input": "验证模块Atiming",
+      "module": "模块A",
+      "scene": "verify",
+      "status": "FAIL"
+    },
+    {
+      "id": "task_20260214_000646_3",
+      "created_at": "2026-02-14T00:06:46.692415",
+      "task_id": "模块A_timing_verify",
+      "input": "验证模块Atiming",
+      "module": "模块A",
+      "scene": "verify",
+      "status": "FAIL"
+    },
+    {
+      "id": "task_20260214_000729_4",
+      "created_at": "2026-02-14T00:07:29.359208",
+      "task_id": "模块A_timing_verify",
+      "input": "验证模块Atiming",
+      "module": "模块A",
+      "scene": "verify",
+      "status": "FAIL"
+    }
+  ],
+  "simulations": [
+    {
+      "id": "simulation_20260213_234604_0",
+      "created_at": "2026-02-13T23:46:04.743062",
+      "task_id": "模块A_timing_verify",
+      "module": "模块A",
+      "timing": "12.3ns",
+      "power": "51.4mW",
+      "area": "1000um²"
+    },
+    {
+      "id": "simulation_20260213_234736_1",
+      "created_at": "2026-02-13T23:47:36.744412",
+      "task_id": "模块A_timing_verify",
+      "module": "模块A",
+      "timing": "12.4ns",
+      "power": "51.5mW",
+      "area": "1000um²"
+    },
+    {
+      "id": "simulation_20260213_235050_2",
+      "created_at": "2026-02-13T23:50:50.716198",
+      "task_id": "模块A_timing_verify",
+      "module": "模块A",
+      "timing": "12.2ns",
+      "power": "50.7mW",
+      "area": "1000um²"
+    },
+    {
+      "id": "simulation_20260214_000646_3",
+      "created_at": "2026-02-14T00:06:46.693714",
+      "task_id": "模块A_timing_verify",
+      "module": "模块A",
+      "timing": "11.8ns",
+      "power": "49.2mW",
+      "area": "1000um²"
+    },
+    {
+      "id": "simulation_20260214_000729_4",
+      "created_at": "2026-02-14T00:07:29.361596",
+      "task_id": "模块A_timing_verify",
+      "module": "模块A",
+      "timing": "12.1ns",
+      "power": "50.4mW",
+      "area": "1000um²"
+    }
+  ],
+  "evaluations": [
+    {
+      "id": "evaluation_20260213_234604_0",
+      "created_at": "2026-02-13T23:46:04.743160",
+      "task_id": "模块A_timing_verify",
+      "goal": {
+        "metric": "timing",
+        "operator": "<",
+        "value": "10ns"
+      },
+      "actual": {
+        "timing": "12.3ns",
+        "power": "51.4mW",
+        "area": "1000um²"
+      },
+      "status": "FAIL",
+      "reason": "实际12.3ns未达目标10ns，差距+2.3(+23.0%)",
+      "comparison": {
+        "target": "10ns",
+        "actual": "12.3ns",
+        "gap": "+2.3"
+      },
+      "suggestion": "差距较大(23.0%)，建议检查参数或工具配置"
+    },
+    {
+      "id": "evaluation_20260213_234736_1",
+      "created_at": "2026-02-13T23:47:36.744539",
+      "task_id": "模块A_timing_verify",
+      "goal": {
+        "metric": "timing",
+        "operator": "<",
+        "value": "10ns"
+      },
+      "actual": {
+        "timing": "12.4ns",
+        "power": "51.5mW",
+        "area": "1000um²"
+      },
+      "status": "FAIL",
+      "reason": "实际12.4ns未达目标10ns，差距+2.4(+24.0%)",
+      "comparison": {
+        "target": "10ns",
+        "actual": "12.4ns",
+        "gap": "+2.4"
+      },
+      "suggestion": "差距较大(24.0%)，建议检查参数或工具配置"
+    },
+    {
+      "id": "evaluation_20260213_235050_2",
+      "created_at": "2026-02-13T23:50:50.716359",
+      "task_id": "模块A_timing_verify",
+      "goal": {
+        "metric": "timing",
+        "operator": "<",
+        "value": "10ns"
+      },
+      "actual": {
+        "timing": "12.2ns",
+        "power": "50.7mW",
+        "area": "1000um²"
+      },
+      "status": "FAIL",
+      "reason": "实际12.2ns未达目标10ns，差距+2.2(+22.0%)",
+      "comparison": {
+        "target": "10ns",
+        "actual": "12.2ns",
+        "gap": "+2.2"
+      },
+      "suggestion": "差距较大(22.0%)，建议检查参数或工具配置"
+    },
+    {
+      "id": "evaluation_20260214_000646_3",
+      "created_at": "2026-02-14T00:06:46.694552",
+      "task_id": "模块A_timing_verify",
+      "goal": {
+        "metric": "timing",
+        "operator": "<",
+        "value": "10ns"
+      },
+      "actual": {
+        "timing": "11.8ns",
+        "power": "49.2mW",
+        "area": "1000um²"
+      },
+      "status": "FAIL",
+      "reason": "实际11.8ns未达目标10ns，差距+1.8(+18.0%)",
+      "comparison": {
+        "target": "10ns",
+        "actual": "11.8ns",
+        "gap": "+1.8"
+      },
+      "suggestion": "接近目标，微调参数可能达标（差距1.8）"
+    },
+    {
+      "id": "evaluation_20260214_000729_4",
+      "created_at": "2026-02-14T00:07:29.362764",
+      "task_id": "模块A_timing_verify",
+      "goal": {
+        "metric": "timing",
+        "operator": "<",
+        "value": "10ns"
+      },
+      "actual": {
+        "timing": "12.1ns",
+        "power": "50.4mW",
+        "area": "1000um²"
+      },
+      "status": "FAIL",
+      "reason": "实际12.1ns未达目标10ns，差距+2.1(+21.0%)",
+      "comparison": {
+        "target": "10ns",
+        "actual": "12.1ns",
+        "gap": "+2.1"
+      },
+      "suggestion": "差距较大(21.0%)，建议检查参数或工具配置"
+    }
+  ]
+}

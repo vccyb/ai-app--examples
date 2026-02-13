@@ -15,15 +15,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 
 /**
@@ -33,32 +30,24 @@ import java.util.stream.Collectors;
 public class PushServiceImpl implements PushService {
 
     private static final Logger log = LoggerFactory.getLogger(PushServiceImpl.class);
-
+    private final ObjectMapper objectMapper = new ObjectMapper();
     @Autowired
     private BusinessTypeRepository businessTypeRepository;
-
     @Autowired
     private PushConfigRepository pushConfigRepository;
-
     @Autowired
     private PushPlatformRepository pushPlatformRepository;
-
     @Autowired
     private PushHistoryRepository pushHistoryRepository;
-
     @Autowired
     private GroupMemberRepository groupMemberRepository;
-
     @Autowired
     private List<PushPlatformStrategy> strategies;
-    
     /**
      * Cache for strategy lookup to improve performance
      */
     private Map<String, PushPlatformStrategy> strategyCache;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    
     // Initialize cache after bean creation
     @PostConstruct
     public void initStrategyCache() {
@@ -214,7 +203,7 @@ public class PushServiceImpl implements PushService {
         final int[] successCount = {0};
         final int[] failureCount = {0};
         final List<String> failurePlatforms = Collections.synchronizedList(new ArrayList<>());
-        
+
         // Create a latch to wait for all tasks to complete
         java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(configs.size());
 
@@ -265,8 +254,8 @@ public class PushServiceImpl implements PushService {
 
                             // Convert to Service layer PushResult
                             PushResult result = platformResult.isSuccess()
-                                ? PushResult.success(platformResult.getMessage(), platformResult)
-                                : PushResult.failure(platformResult.getMessage(), platformResult);
+                                    ? PushResult.success(platformResult.getMessage(), platformResult)
+                                    : PushResult.failure(platformResult.getMessage(), platformResult);
 
                             // Record push history (store complete platform response)
                             PushHistory history = new PushHistory();
@@ -287,20 +276,20 @@ public class PushServiceImpl implements PushService {
                                     successCount[0]++;
                                 }
                                 log.info("推送成功，平台：{}，traceId：{}",
-                                    platform.getPlatformName(), platformResult.getTraceId());
+                                        platform.getPlatformName(), platformResult.getTraceId());
                             } else {
                                 synchronized (failureCount) {
                                     failureCount[0]++;
                                 }
                                 failurePlatforms.add(platformCode + "(" + platformResult.getMessage() + ")");
                                 log.error("推送失败，平台：{}，错误：{}",
-                                    platform.getPlatformName(), platformResult.getMessage());
+                                        platform.getPlatformName(), platformResult.getMessage());
                             }
 
                         } catch (Exception e) {
                             // Record exception push history
                             recordExceptionHistory(strategy, config, request, businessType, members, e);
-                            
+
                             synchronized (failureCount) {
                                 failureCount[0]++;
                             }
@@ -362,25 +351,25 @@ public class PushServiceImpl implements PushService {
         }
         return strategyCache.get(platformCode);
     }
-    
+
     /**
      * Execute push with retry mechanism
      */
     private PlatformPushResult executeWithRetry(PushPlatformStrategy strategy, Map<String, Object> requestParams, int maxRetries) {
         Exception lastException = null;
         PlatformPushResult lastResult = null;
-        
+
         for (int i = 0; i < maxRetries; i++) {
             try {
                 PlatformPushResult result = strategy.execute(requestParams);
-                
+
                 // If successful or it's the last attempt, return the result
                 if (result.isSuccess() || i == maxRetries - 1) {
                     return result;
                 }
-                
+
                 log.warn("推送尝试 {} 失败，准备重试... 错误: {}", i + 1, result.getMessage());
-                
+
                 // Wait before retry with exponential backoff
                 try {
                     Thread.sleep((long) Math.pow(2, i) * 1000); // 1s, 2s, 4s...
@@ -388,11 +377,11 @@ public class PushServiceImpl implements PushService {
                     Thread.currentThread().interrupt();
                     return result;
                 }
-                
+
                 lastResult = result;
             } catch (Exception e) {
                 lastException = e;
-                
+
                 if (i == maxRetries - 1) {
                     // Last attempt, create error result
                     PlatformPushResult errorResult = new PlatformPushResult();
@@ -401,9 +390,9 @@ public class PushServiceImpl implements PushService {
                     errorResult.setExceptionStack(getStackTrace(e));
                     return errorResult;
                 }
-                
+
                 log.warn("推送尝试 {} 异常，准备重试...", i + 1, e);
-                
+
                 // Wait before retry with exponential backoff
                 try {
                     Thread.sleep((long) Math.pow(2, i) * 1000); // 1s, 2s, 4s...
@@ -417,7 +406,7 @@ public class PushServiceImpl implements PushService {
                 }
             }
         }
-        
+
         // This should not be reached, but return the last result/error as fallback
         if (lastResult != null) {
             return lastResult;
@@ -431,13 +420,13 @@ public class PushServiceImpl implements PushService {
             return PlatformPushResult.failure("未知错误");
         }
     }
-    
+
     /**
      * Record exception push history
      */
-    private void recordExceptionHistory(PushPlatformStrategy strategy, PushConfig config, 
-                                       PushExecuteRequest request, BusinessType businessType, 
-                                       List<GroupMember> members, Exception e) {
+    private void recordExceptionHistory(PushPlatformStrategy strategy, PushConfig config,
+                                        PushExecuteRequest request, BusinessType businessType,
+                                        List<GroupMember> members, Exception e) {
         try {
             Map<String, Object> configJson = parseConfigJson(config.getConfigJson());
             BasePushRequest baseRequest = strategy.buildPushRequest(
@@ -465,7 +454,7 @@ public class PushServiceImpl implements PushService {
             log.error("保存推送历史失败", saveException);
         }
     }
-    
+
     /**
      * 解析配置JSON
      */
@@ -476,7 +465,8 @@ public class PushServiceImpl implements PushService {
         }
 
         try {
-            return objectMapper.readValue(json, new TypeReference<Map<String, Object>>() {});
+            return objectMapper.readValue(json, new TypeReference<Map<String, Object>>() {
+            });
         } catch (Exception e) {
             log.error("解析配置JSON失败，使用空配置。JSON：{}", json, e);
             return new HashMap<>();
