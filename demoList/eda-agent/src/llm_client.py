@@ -77,6 +77,10 @@ class MockLLMClient(LLMClient):
             elif "解析为 EDA 验证任务" in content or "解析为" in content:
                 return MockResponse(self._mock_parse_task(content))
 
+            # 3. execution plan 请求（返回 JSON 格式的执行计划）
+            elif "generate execution plan" in content or "execution plan" in content:
+                return MockResponse(self._mock_execution_plan(content))
+
             # 其他类型的请求：返回 mock 响应
             return MockResponse(content)
 
@@ -183,6 +187,78 @@ class MockLLMClient(LLMClient):
         result = {"module": module}
         if goal:
             result["goal"] = goal
+
+        return json.dumps(result, ensure_ascii=False)
+
+    def _mock_execution_plan(self, prompt: str) -> str:
+        """模拟执行计划生成，返回 JSON 格式的执行计划
+
+        Args:
+            prompt: 用户输入的提示文本
+
+        Returns:
+            JSON 格式的字符串
+        """
+        import json
+
+        # 提取用户输入（在"User task:"之后）
+        import re
+        user_input_match = re.search(r'User task:\s*([^\n]+?)(?:\n\nPlease)', prompt)
+        if not user_input_match:
+            # 返回默认执行计划
+            return json.dumps({
+                "reasoning": "No specific task provided, using default plan",
+                "steps": [
+                    {"action": "Query module specifications", "service": "rag_service", "params": {"module": "ModuleA"}},
+                    {"action": "Run simulation", "service": "eda_service", "params": {"module": "ModuleA", "parameters": {}}},
+                    {"action": "Save results", "service": "state_service", "params": {"result": "simulation_data"}}
+                ]
+            }, ensure_ascii=False)
+
+        user_input = user_input_match.group(1).strip()
+
+        # 解析模块名
+        module = "ModuleA"
+        module_match = re.search(r'Module\s*([A-D])', user_input, re.IGNORECASE)
+        if module_match:
+            module = f"Module{module_match.group(1)}"
+
+        # 根据关键词生成执行步骤
+        steps = []
+
+        # 如果有"verify"/"验证"相关关键词
+        if any(kw in user_input.lower() for kw in ["verify", "验证", "check", "检查", "test", "测试"]):
+            steps.append({"action": "Query module specifications", "service": "rag_service", "params": {"module": module}})
+            steps.append({"action": "Run simulation to get metrics", "service": "eda_service", "params": {"module": module, "parameters": {}}})
+            steps.append({"action": "Compare results with target", "params": {"target": "specification"}})
+            steps.append({"action": "Save verification result", "service": "state_service", "params": {"result": "verification"}})
+
+        # 如果有"report"/"报告"相关关键词
+        elif any(kw in user_input.lower() for kw in ["report", "报告", "generate", "生成", "summary", "汇总"]):
+            steps.append({"action": "Query historical data", "service": "rag_service", "params": {"module": module}})
+            steps.append({"action": "Get simulation results", "service": "eda_service", "params": {"module": module, "parameters": {}}})
+            steps.append({"action": "Generate summary report", "params": {"module": module}})
+            steps.append({"action": "Save report", "service": "state_service", "params": {"result": "report"}})
+
+        # 如果有"optimize"/"优化"相关关键词
+        elif any(kw in user_input.lower() for kw in ["optimize", "优化", "improve", "改进", "adjust", "调整"]):
+            steps.append({"action": "Query current specifications", "service": "rag_service", "params": {"module": module}})
+            steps.append({"action": "Run initial simulation", "service": "eda_service", "params": {"module": module, "parameters": {}}})
+            steps.append({"action": "Analyze performance gap", "params": {"current": "sim_result", "target": "optimization_goal"}})
+            steps.append({"action": "Adjust parameters and re-simulate", "service": "eda_service", "params": {"module": module, "parameters": {"optimized": True}}})
+            steps.append({"action": "Save optimization result", "service": "state_service", "params": {"result": "optimized"}})
+
+        # 默认计划
+        else:
+            steps.append({"action": "Query module specifications", "service": "rag_service", "params": {"module": module}})
+            steps.append({"action": "Run simulation", "service": "eda_service", "params": {"module": module, "parameters": {}}})
+            steps.append({"action": "Save results", "service": "state_service", "params": {"result": "simulation"}})
+
+        # 构建结果
+        result = {
+            "reasoning": f"Analyzed task '{user_input}' and generated execution plan for {module}",
+            "steps": steps
+        }
 
         return json.dumps(result, ensure_ascii=False)
 

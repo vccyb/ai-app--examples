@@ -55,9 +55,11 @@ def main():
     # 导入场景
     from scenes.verify_simple import VerifyScene
     from scenes.report_simple import ReportScene
+    from scenes.true_llm_plan_scene import TrueLLMPlanScene
 
     manager.register_scene(VerifyScene(services))
     manager.register_scene(ReportScene(services))
+    manager.register_scene(TrueLLMPlanScene(services))
 
     # 创建控制器
     controller = Controller()

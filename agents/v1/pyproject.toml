@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "claude-agent-framework"
+version = "1.0.0"
+description = "基于 Anthropic SDK 的通用自动化 Agent 框架（支持智谱 API）"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "anthropic>=0.40.0",
+    "python-dotenv>=1.0.0",
+]
+
+[tool.setuptools]
+packages = [
+    "agents",
+    "tools",
+    "config",
+    "services",
+]

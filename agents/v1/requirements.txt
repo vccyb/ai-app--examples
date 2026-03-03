@@ -1,0 +1,6 @@
+# Claude Agent SDK (从 GitHub 安装)
+# pip install git+https://github.com/anthropics/claude-agent-sdk-python.git
+claude-agent-sdk @ git+https://github.com/anthropics/claude-agent-sdk-python.git@main
+
+# 环境变量管理
+python-dotenv>=1.0.0
