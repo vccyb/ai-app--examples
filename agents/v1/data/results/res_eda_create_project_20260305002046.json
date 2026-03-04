@@ -1,0 +1,16 @@
+{
+  "result_id": "res_eda_create_project_20260305002046",
+  "tool_name": "eda_create_project",
+  "timestamp": "2026-03-05T00:20:46.703617",
+  "inputs": {
+    "name": "test_verify2"
+  },
+  "outputs": {
+    "status": "success",
+    "message": "项目 'test_verify2' 已创建",
+    "project": "test_verify2",
+    "project_id": "test_verify2",
+    "path": "./workspace/test_verify2"
+  },
+  "project_id": "test_verify2"
+}

@@ -1,0 +1,38 @@
+{
+  "project_id": "led_verify",
+  "name": "led_verify",
+  "created_at": "2026-03-05T00:22:38.006250",
+  "components": [
+    {
+      "project": "led_verify",
+      "type": "resistor",
+      "name": "R1",
+      "value": "330Ω",
+      "pins": 2
+    },
+    {
+      "project": "led_verify",
+      "type": "led",
+      "name": "D1",
+      "value": "红色",
+      "pins": 2
+    }
+  ],
+  "connections": [
+    {
+      "project": "led_verify",
+      "from": "R1.2",
+      "to": "D1.1"
+    }
+  ],
+  "simulations": [
+    {
+      "status": "success",
+      "message": "直流工作点分析完成",
+      "project": "led_verify",
+      "type": "dc",
+      "results": "仿真结果已保存到 led_verify/simulation/dc.txt"
+    }
+  ],
+  "saved_at": "2026-03-05T00:23:14.959021"
+}

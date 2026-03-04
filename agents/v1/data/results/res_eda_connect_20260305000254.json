@@ -1,0 +1,16 @@
+{
+  "result_id": "res_eda_connect_20260305000254",
+  "tool_name": "eda_connect",
+  "timestamp": "2026-03-05T00:02:54.641394",
+  "inputs": {
+    "project": "LED电路",
+    "from": "D1.2",
+    "to": "V1.2"
+  },
+  "outputs": {
+    "status": "success",
+    "message": "D1.2 → V1.2",
+    "connection": "D1.2 → V1.2"
+  },
+  "project_id": "LED电路"
+}

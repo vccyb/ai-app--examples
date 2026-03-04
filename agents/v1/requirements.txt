@@ -2,5 +2,12 @@
 # pip install git+https://github.com/anthropics/claude-agent-sdk-python.git
 claude-agent-sdk @ git+https://github.com/anthropics/claude-agent-sdk-python.git@main
 
+# Anthropic API SDK
+anthropic>=0.40.0
+
 # 环境变量管理
 python-dotenv>=1.0.0
+
+# 检查脚本依赖
+pydantic>=2.0.0
+pyyaml>=6.0.0

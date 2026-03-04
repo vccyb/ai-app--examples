@@ -1,0 +1,22 @@
+{
+  "result_id": "res_eda_add_component_20260305002047",
+  "tool_name": "eda_add_component",
+  "timestamp": "2026-03-05T00:20:47.965144",
+  "inputs": {
+    "project": "test_verify2",
+    "type": "resistor",
+    "name": "R1",
+    "value": "330Ω"
+  },
+  "outputs": {
+    "status": "success",
+    "message": "已添加 电阻 R1",
+    "component": "R1",
+    "type": "resistor",
+    "type_cn": "电阻",
+    "value": "330Ω",
+    "pins": 2,
+    "project": "test_verify2"
+  },
+  "project_id": "test_verify2"
+}

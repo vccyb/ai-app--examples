@@ -1,0 +1,23 @@
+* LED Blink Circuit Design
+* Designer: AI Assistant
+* Date: 2025-06-17
+* Project: Basic LED circuit for testing
+
+* Circuit Components
+VCC VCC 0 DC 5V
+R1 VCC N1 330
+D1 N1 0 LED
+SW VCC N1 SW
+
+* LED Model (Standard Red LED)
+.MODEL LED D(Is=1e-14 Rs=1 N=1.8 Vj=0.7 Cjo=10p Tt=10n)
+
+* Switch Model
+.MODEL SW SW(Ron=0.01 Roff=1e6 Vt=2.5)
+
+* Simulation Commands
+.OP
+.DC VCC 0 5 0.1
+.TRAN 1ms 100ms
+
+.END

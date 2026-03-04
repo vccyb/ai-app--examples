@@ -1,0 +1,67 @@
+{
+  "project_id": "LED电路",
+  "name": "LED电路",
+  "created_at": "2026-03-05T00:02:54.639724",
+  "components": [
+    {
+      "project": "LED电路",
+      "type": "led",
+      "name": "D1",
+      "value": "red",
+      "pins": 2
+    },
+    {
+      "project": "LED电路",
+      "type": "resistor",
+      "name": "R1",
+      "value": "330Ω",
+      "pins": 2
+    },
+    {
+      "project": "LED电路",
+      "type": "voltage_source",
+      "name": "V1",
+      "value": "5V",
+      "pins": 2
+    },
+    {
+      "project": "LED电路",
+      "type": "switch",
+      "name": "S1",
+      "value": "",
+      "pins": 2
+    }
+  ],
+  "connections": [
+    {
+      "project": "LED电路",
+      "from": "V1.1",
+      "to": "S1.1"
+    },
+    {
+      "project": "LED电路",
+      "from": "S1.2",
+      "to": "R1.1"
+    },
+    {
+      "project": "LED电路",
+      "from": "R1.2",
+      "to": "D1.1"
+    },
+    {
+      "project": "LED电路",
+      "from": "D1.2",
+      "to": "V1.2"
+    }
+  ],
+  "simulations": [
+    {
+      "status": "success",
+      "message": "直流工作点分析完成",
+      "project": "LED电路",
+      "type": "dc",
+      "results": "仿真结果已保存到 LED电路/simulation/dc.txt"
+    }
+  ],
+  "saved_at": "2026-03-05T00:02:54.642473"
+}

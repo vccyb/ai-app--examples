@@ -5,12 +5,15 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "claude-agent-framework"
 version = "1.0.0"
-description = "基于 Anthropic SDK 的通用自动化 Agent 框架（支持智谱 API）"
+description = "基于 Claude Agent SDK 的 Master Agent 系统（EDA + HimaQA）"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "claude-agent-sdk @ git+https://github.com/anthropics/claude-agent-sdk-python.git@main",
     "anthropic>=0.40.0",
     "python-dotenv>=1.0.0",
+    "pydantic>=2.0.0",
+    "pyyaml>=6.0.0",
 ]
 
 [tool.setuptools]

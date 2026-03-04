@@ -1,0 +1,22 @@
+{
+  "result_id": "res_eda_add_component_20260305002256",
+  "tool_name": "eda_add_component",
+  "timestamp": "2026-03-05T00:22:56.708743",
+  "inputs": {
+    "project": "led_verify",
+    "type": "led",
+    "name": "D1",
+    "value": "红色"
+  },
+  "outputs": {
+    "status": "success",
+    "message": "已添加 LED D1",
+    "component": "D1",
+    "type": "led",
+    "type_cn": "LED",
+    "value": "红色",
+    "pins": 2,
+    "project": "led_verify"
+  },
+  "project_id": "led_verify"
+}

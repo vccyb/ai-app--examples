@@ -1,0 +1,17 @@
+{
+  "result_id": "res_eda_simulate_20260305000240",
+  "tool_name": "eda_simulate",
+  "timestamp": "2026-03-05T00:02:40.281775",
+  "inputs": {
+    "project": "LED电路",
+    "type": "dc"
+  },
+  "outputs": {
+    "status": "success",
+    "message": "直流工作点分析完成",
+    "project": "LED电路",
+    "type": "dc",
+    "results": "仿真结果已保存到 LED电路/simulation/dc.txt"
+  },
+  "project_id": "LED电路"
+}

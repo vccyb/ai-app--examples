@@ -1,0 +1,17 @@
+{
+  "result_id": "res_eda_export_20260305002423",
+  "tool_name": "eda_export",
+  "timestamp": "2026-03-05T00:24:23.996128",
+  "inputs": {
+    "project": "led_verify",
+    "format": "spice"
+  },
+  "outputs": {
+    "status": "success",
+    "message": "spice 已导出",
+    "project": "led_verify",
+    "format": "spice",
+    "file": "led_verify/export/led_verify.spice"
+  },
+  "project_id": "led_verify"
+}

@@ -1,0 +1,22 @@
+{
+  "result_id": "res_eda_add_component_20260305002248",
+  "tool_name": "eda_add_component",
+  "timestamp": "2026-03-05T00:22:48.348968",
+  "inputs": {
+    "project": "led_verify",
+    "type": "resistor",
+    "name": "R1",
+    "value": "330Ω"
+  },
+  "outputs": {
+    "status": "success",
+    "message": "已添加 电阻 R1",
+    "component": "R1",
+    "type": "resistor",
+    "type_cn": "电阻",
+    "value": "330Ω",
+    "pins": 2,
+    "project": "led_verify"
+  },
+  "project_id": "led_verify"
+}

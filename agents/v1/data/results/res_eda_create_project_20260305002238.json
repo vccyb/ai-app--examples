@@ -1,0 +1,16 @@
+{
+  "result_id": "res_eda_create_project_20260305002238",
+  "tool_name": "eda_create_project",
+  "timestamp": "2026-03-05T00:22:38.006650",
+  "inputs": {
+    "name": "led_verify"
+  },
+  "outputs": {
+    "status": "success",
+    "message": "项目 'led_verify' 已创建",
+    "project": "led_verify",
+    "project_id": "led_verify",
+    "path": "./workspace/led_verify"
+  },
+  "project_id": "led_verify"
+}

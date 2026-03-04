@@ -1,0 +1,17 @@
+{
+  "result_id": "res_eda_simulate_20260305002314",
+  "tool_name": "eda_simulate",
+  "timestamp": "2026-03-05T00:23:14.959345",
+  "inputs": {
+    "project": "led_verify",
+    "type": "dc"
+  },
+  "outputs": {
+    "status": "success",
+    "message": "直流工作点分析完成",
+    "project": "led_verify",
+    "type": "dc",
+    "results": "仿真结果已保存到 led_verify/simulation/dc.txt"
+  },
+  "project_id": "led_verify"
+}

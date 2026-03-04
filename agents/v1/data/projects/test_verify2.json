@@ -1,0 +1,17 @@
+{
+  "project_id": "test_verify2",
+  "name": "test_verify2",
+  "created_at": "2026-03-05T00:20:46.703031",
+  "components": [
+    {
+      "project": "test_verify2",
+      "type": "resistor",
+      "name": "R1",
+      "value": "330Ω",
+      "pins": 2
+    }
+  ],
+  "connections": [],
+  "simulations": [],
+  "saved_at": "2026-03-05T00:20:47.964488"
+}

@@ -1,0 +1,22 @@
+{
+  "result_id": "res_eda_add_component_20260305000254",
+  "tool_name": "eda_add_component",
+  "timestamp": "2026-03-05T00:02:54.640714",
+  "inputs": {
+    "project": "LED电路",
+    "type": "switch",
+    "name": "S1",
+    "value": ""
+  },
+  "outputs": {
+    "status": "success",
+    "message": "已添加 switch S1",
+    "component": "S1",
+    "type": "switch",
+    "type_cn": "switch",
+    "value": "",
+    "pins": 2,
+    "project": "LED电路"
+  },
+  "project_id": "LED电路"
+}

@@ -1,0 +1,17 @@
+{
+  "result_id": "res_eda_create_project_20260305000240",
+  "tool_name": "eda_create_project",
+  "timestamp": "2026-03-05T00:02:40.279155",
+  "inputs": {
+    "name": "LED电路",
+    "description": "一个简单的LED照明电路，包含LED、限流电阻和5V直流电源"
+  },
+  "outputs": {
+    "status": "success",
+    "message": "项目 'LED电路' 已创建",
+    "project": "LED电路",
+    "project_id": "LED电路",
+    "path": "./workspace/LED电路"
+  },
+  "project_id": "LED电路"
+}
