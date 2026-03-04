@@ -25,10 +25,10 @@ python master_main.py
 
 ## 目录
 
-- `ARCHITECTURE.md`：架构设计与实现说明
-- `USER_GUIDE.md`：用户使用手册
-- `VERIFY_GUIDE.md`：验证与排障
-- `SDK_MIGRATION.md`：迁移与稳定化说明
+- `doc/ARCHITECTURE.md`：架构设计与实现说明
+- `doc/USER_GUIDE.md`：用户使用手册
+- `doc/VERIFY_GUIDE.md`：验证与排障
+- `doc/SDK_MIGRATION.md`：迁移与稳定化说明
 
 ## Python 版本
 

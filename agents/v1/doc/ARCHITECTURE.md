@@ -53,9 +53,11 @@ agents/v1/
 ├── master_main.py
 ├── check_sdk_setup.py
 ├── README.md
-├── USER_GUIDE.md
-├── VERIFY_GUIDE.md
-└── SDK_MIGRATION.md
+└── doc/
+    ├── ARCHITECTURE.md
+    ├── USER_GUIDE.md
+    ├── VERIFY_GUIDE.md
+    └── SDK_MIGRATION.md
 ```
 
 ---

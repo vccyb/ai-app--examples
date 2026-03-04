@@ -107,7 +107,7 @@ You: 设计一个 LED 电路并提交给张经理测试
 ## 推荐验证
 
 详细验证步骤见：
-- `VERIFY_GUIDE.md`
+- `doc/VERIFY_GUIDE.md`
 
 最短验证：
 

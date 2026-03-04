@@ -18,8 +18,7 @@ dependencies = [
 
 [tool.setuptools]
 packages = [
-    "agents",
     "tools",
     "config",
-    "services",
+    "storage",
 ]

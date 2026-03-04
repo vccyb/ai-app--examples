@@ -82,6 +82,6 @@
 
 ## 相关文档
 
-- `ARCHITECTURE.md`
-- `USER_GUIDE.md`
-- `VERIFY_GUIDE.md`
+- `doc/ARCHITECTURE.md`
+- `doc/USER_GUIDE.md`
+- `doc/VERIFY_GUIDE.md`
